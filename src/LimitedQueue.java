@@ -23,15 +23,17 @@ public class LimitedQueue<Process> extends LinkedList<Process> {
 	@Override
     public boolean add(Process p) {
 		
-        super.addLast(p);
-        while (size() > limit) { 
-        	super.removeLast(); 
-        	System.out.println("That one didn't fit in the readyQueue.");
-        	return false;
-        }
-        return true;
-        
-    }
+		// if it can fit, add it
+		if (size() < limit) {
+			
+			super.addLast(p);
+			return true;
+		}
+		else {
+			
+			return false;
+		}
+    } // End custom add().
 	
 	@Override
 	public Process remove() {
@@ -39,6 +41,10 @@ public class LimitedQueue<Process> extends LinkedList<Process> {
 		return super.removeFirst();
 	}
 	
+	/**
+	 * retunr
+	 * @return
+	 */
 	public int getLimit() {
 		return limit;
 	}

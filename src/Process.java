@@ -17,7 +17,7 @@ public class Process {
 	private Iterator ioIndex;
 	private int cpuCounter;
 	private int ioCounter;
-	private Process next;
+	private int totalJobTime;
 	
 	/**
 	 * Default Process Constructor
@@ -25,7 +25,6 @@ public class Process {
 	 * @param id - the id of the PCB
 	 * @param cpuBurst - the list of CPU bursts
 	 * @param ioBurst - the list of IO bursts
-	 * @param next - pointer to the next Process
 	 */
 	public Process(int id, ArrayList<Integer> cpuBurst, ArrayList<Integer> ioBurst) {
 		
@@ -36,7 +35,7 @@ public class Process {
 		ioIndex = ioBurst.iterator();
 		cpuCounter = cpuBurst.size();
 		ioCounter = ioBurst.size();
-		next = null;
+		totalJobTime = calculateJobTime();
 		
 	} // End default constructor
 	
@@ -58,28 +57,24 @@ public class Process {
 	public Iterator getIoIndex() {
 		return ioIndex;
 	}
-	public Process getNext() {
-		return next;
-	}
-	
-	/*
-	 * Begin Setters
-	 */
-	public void setNext(Process next) {
-		this.next = next;
+	public int getTotalJobTime() {
+		return totalJobTime;
 	}
 
-	/*
-	 * Prints out a Process block data.
-	 */
 	@Override
 	public String toString() {
-		return "\nProcess [id=" + id + ", cpuBurst=" + cpuBurst + ", ioBurst="
+		return "Process [id=" + id + ", cpuBurst=" + cpuBurst + ", ioBurst="
 				+ ioBurst + ", cpuIndex=" + cpuIndex + ", ioIndex=" + ioIndex
-				+ ", next=" + next + "]";
+				+ ", cpuCounter=" + cpuCounter + ", ioCounter=" + ioCounter
+				+ ", totalJobTime=" + totalJobTime + "]";
 	}
 
-	public int getJobTime() {
+	/**
+	 * Calculates the total job time for this process.
+	 * 
+	 * @return
+	 */
+	public int calculateJobTime() {
 		
 		int jobTime = 0;
 		
@@ -91,7 +86,6 @@ public class Process {
 			
 			jobTime += ioBurst.get(j);
 		}
-		System.out.println(this.id + " JobTime: " + jobTime);
 		return jobTime;
 	}
 

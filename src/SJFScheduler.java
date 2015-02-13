@@ -52,24 +52,18 @@ public class SJFScheduler extends Scheduler {
          
         @Override
         public int compare(Process p1, Process p2) {
-            return (int) (p1.getJobTime() - p2.getJobTime());
+            return (int) (p1.getTotalJobTime() - p2.getTotalJobTime());
         }
     };
 
 	@Override
 	public void loadProcesses(ArrayList<Process> processList) {
 		
-		// load the processes into the jobQueue
-		// and link them as they go.
+		// load the processes into the jobQueue.
 		int processListSize = processList.size();
 		for (int j = 0; j < processListSize; j++) {
 			
-			Process current = processList.remove(0);
-			
-			if (processList.size() != 0) {
-				current.setNext(processList.get(0));
-			}
-			jobQueue.add(current);
+			jobQueue.add(processList.remove(0));
 		}
 		
 		// load the first three processes into the readyQueue
