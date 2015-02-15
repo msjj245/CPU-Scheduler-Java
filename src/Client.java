@@ -61,7 +61,7 @@ public class Client {
 					processList = parseInputFile(dataFile);
 
 					System.out.println("\n-->\n");
-					scheduler = new SJFScheduler(processList);
+					scheduler = new Scheduler(processList, "SJF");
 					
 					break;
 					
