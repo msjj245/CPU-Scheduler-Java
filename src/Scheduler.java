@@ -1,84 +1,57 @@
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
 
-public class Scheduler {
+public abstract class Scheduler {
 	
 	protected Clock theClock;
-	public LimitedQueue<Process> readyQueue;
-	public Queue<Process> diskQueue;
-	public Queue<Process> ioQueue;
-	public LimitedQueue<Process> CPU;
-	private PriorityQueue<Process> jobQueue;
+	protected LimitedQueue<Process> readyQueue;
+	protected Queue<Process> ioWaitQueue;
+	protected PriorityQueue<Process> jobQueue;
+	protected CPU CPU;
+	protected Disk diskQueue;
 	
 	/**
 	 * Default Constructor
 	 */
-	public Scheduler(ArrayList<Process> processList, String type) {
+	public Scheduler(ArrayList<Process> processList) {
 		
-		theClock = new Clock();
+		theClock = Clock.getInstance();
 		readyQueue = new LimitedQueue<Process>(3);
-		diskQueue = new LinkedList<Process>();
-		ioQueue = new LinkedList<Process>();
-		CPU = new LimitedQueue<Process>(1);
+		ioWaitQueue = new LinkedList<Process>();
+		CPU = new CPU(1);
+		diskQueue = new Disk();
 		
-		switch (type) {
-		
-			case "SJF":
-				jobQueue = new PriorityQueue<Process>(jobTimeComparator);
-				// beginSJF();
-				break;
-				
-			case "RoundRobin":
-				jobQueue = new PriorityQueue<Process>(orderComparator);
-				// beginRoundRobin();
-				break;
-				
-			default:
-				break;
-		
-		}
 		
 	} // End Default Constructor
 	
 	/**
-	 * Begin processing by SJF algorithm
+	 * Begin scheduling algorithm
 	 */
-	public void beginSJF() {
-		
-		
-	}
+	public abstract void begin();
 	
 	/**
-	 * Begin processing by Round Robin algorithm
-	 */
-	public void beginRoundRobin() {
-		
-	}
-	
-	
-	public void incrementClock(int i) {
-		
-		for (int j = 0; j > i; j++) {
-			theClock.tick();
-		}
-	}
-	
-	/**
-	 * Loads all processes into the job queue
+	 * Loads all processes into the job queue,
+	 * then 3 processes to the ready queue.
 	 * 
 	 * @param processList
 	 */
 	public void loadProcesses(ArrayList<Process> processList) {
 		
-		// load the processes into the jobQueue.
+		System.out.println("\nInitial Job Queue:  =======================");
+		
+		// load the processes into the jobQueue
 		int processListSize = processList.size();
+		
 		for (int j = 0; j < processListSize; j++) {
 			
-			jobQueue.add(processList.remove(0));
+			Process thisProcess = processList.remove(0);
+			theClock.addObserver(thisProcess);
+			
+			System.out.println(thisProcess.toString());
+			jobQueue.add(thisProcess);
 		}
 		
 		// load the first three processes into the readyQueue
@@ -87,29 +60,12 @@ public class Scheduler {
 			readyQueue.add(jobQueue.remove());
 		}
 		
-	} // End loadProcesses
+	} // End loadProcesses().
 	
 	/**
-	 * Assigns a comparator for the totalJobTime of a Process
+	 * Prints the current state of the CPU Scheduler.
 	 */
-    public static Comparator<Process> jobTimeComparator = new Comparator<Process>(){
-         
-        @Override
-        public int compare(Process p1, Process p2) {
-            return (int) (p1.getTotalJobTime() - p2.getTotalJobTime());
-        }
-    };
-    
-    /**
-	 * Assigns a comparator for the totalJobTime of a Process
-	 */
-    public static Comparator<Process> orderComparator = new Comparator<Process>(){
-         
-        @Override
-        public int compare(Process p1, Process p2) {
-            return (int) (p1.getId() - p2.getId());
-        }
-    };
+	public abstract void printState();
 	
 	
 } // End Scheduler Class

@@ -10,6 +10,7 @@
 
 import java.util.LinkedList;
 
+
 @SuppressWarnings({ "serial", "hiding" })
 public class LimitedQueue<Process> extends LinkedList<Process> {
 	

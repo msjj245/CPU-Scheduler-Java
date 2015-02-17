@@ -1,5 +1,6 @@
 import java.util.ArrayList;
-// import java.util.Iterator;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Process Class
@@ -11,13 +12,13 @@ import java.util.ArrayList;
 public class Process {
 	
 	private int id;
-	private ArrayList<Integer> cpuBurst;
-	private ArrayList<Integer> ioBurst;
-	// private Iterator cpuIndex;
-	// private Iterator ioIndex;
+	private List<Integer> cpuBurst;
+	private List<Integer> ioBurst;
+	//private Iterator cpuIterator;
+	//private Iterator ioIterator;
 	private int cpuCounter;
 	private int ioCounter;
-	private int totalJobTime;
+	private int theTime;
 	
 	/**
 	 * Default Constructor
@@ -26,16 +27,15 @@ public class Process {
 	 * @param cpuBurst - the list of CPU bursts
 	 * @param ioBurst - the list of IO bursts
 	 */
-	public Process(int id, ArrayList<Integer> cpuBurst, ArrayList<Integer> ioBurst) {
+	public Process(int id, List<Integer> cpuBurst, List<Integer> ioBurst) {
 		
 		this.id = id;
 		this.cpuBurst = cpuBurst;
 		this.ioBurst = ioBurst;
-		// cpuIndex = cpuBurst.iterator();
-		// ioIndex = ioBurst.iterator();
+		//cpuIterator = cpuBurst.iterator();
+		//ioIterator = ioBurst.iterator();
 		cpuCounter = cpuBurst.size();
 		ioCounter = ioBurst.size();
-		totalJobTime = calculateJobTime();
 		
 	} // End default constructor
 	
@@ -45,47 +45,65 @@ public class Process {
 	public int getId() {
 		return id;
 	}
-	public ArrayList<Integer> getCpuBurst() {
+	public List<Integer> getCpuBurst() {
 		return cpuBurst;
 	}
-	public ArrayList<Integer> getIoBurst() {
+	public int getNextCpuBurst() {
+		return cpuBurst.get(0);
+	}
+	public List<Integer> getIoBurst() {
 		return ioBurst;
 	}
-	/*public Iterator getCpuIndex() {
-		return cpuIndex;
+	public int getNextIoBurst() {
+		return ioBurst.get(0);
 	}
-	public Iterator getIoIndex() {
-		return ioIndex;
-	}*/
-	public int getTotalJobTime() {
-		return totalJobTime;
+	public int getCpuCounter() {
+		return cpuCounter;
+	}
+	public void setCpuCounter(int cpuCounter) {
+		this.cpuCounter = cpuCounter;
+	}
+	public int getIoCounter() {
+		return ioCounter;
+	}
+	public void setIoCounter(int ioCounter) {
+		this.ioCounter = ioCounter;
 	}
 
 	@Override
 	public String toString() {
-		return "Process [id=" + id + ", cpuBurst=" + cpuBurst + ", ioBurst="
-				+ ioBurst + ", cpuCounter=" + cpuCounter + ", ioCounter=" + ioCounter
-				+ ", totalJobTime=" + totalJobTime + "]";
-	}
-
+		
+		String text = String.format("\n   PCB %d\n\n\tCPU Bursts: %s\n\tIO Bursts: %s\n\tcpuBurstIndex: %d" +
+				"\n\tioBurstIndex: %d\n\tremainingCPUBurstTime: %d\n\tremainingIOBurstTime: %d" +
+				"\n\tremainingTicksInTimeslice: %d",
+				this.getId(), cpuBurst.toString(), ioBurst.toString(), -1, -1, 0, 0, 0);
+		
+		return text;
+		
+	} // End toString().
+	
 	/**
-	 * Calculates the total job time for this process.
-	 * 
-	 * @return - jobTime
+	 * Runs the CPU burst.
 	 */
-	public int calculateJobTime() {
+	public void runCPUBurst() {
 		
-		int jobTime = 0;
 		
-		for (int i = 0; i < cpuBurst.size(); i++) {
-			
-			jobTime += cpuBurst.get(i);
-		}
-		for (int j = 0; j < ioBurst.size(); j++) {
-			
-			jobTime += ioBurst.get(j);
-		}
-		return jobTime;
+	} // End runCPUBurst().
+	
+	/**
+	 * Runs the IO burst.
+	 */
+	public void runIOBurst() {
+		
+		
+	} // End runIOBurst().
+
+	public void update(Clock theClock, Process observer) {
+		theTime = theClock.getTime();	
 	}
+	
+	
+	
+	
 
 } // End Process Class

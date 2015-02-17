@@ -6,13 +6,11 @@
  */
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.util.StringTokenizer;
 
 public class Client {
 
@@ -23,11 +21,12 @@ public class Client {
 		Scanner fileInput = new Scanner(System.in);
 		ArrayList<Process> processList;
 		String dataFile;
+		@SuppressWarnings("unused")
 		Scheduler scheduler;
 		
 		System.out.print("\tCPU SCHEDULER\n");
 				
-		System.out.println("\nSelect A Scheduling Algorithm:");
+		System.out.println("\nSelect Scheduling Algorithm:");
 		System.out.println("\t1. Round Robin (RR)\n" +
 							   "\t2. Shortest Job First (SJF)");
 			
@@ -41,27 +40,29 @@ public class Client {
 			switch(command) {
 			
 				case 1:
-					System.out.print("Enter time quantum length:");
-					int timeQuantum = in.nextInt();
-					
+					System.out.println("-->\nUsing RoundRobin Scheduling\n\n");
 					System.out.print("Enter a filename of jobs data: ");
 					dataFile = fileInput.nextLine();
-										
+					fileInput.close();
+					
 					processList = parseInputFile(dataFile);
 					
-					System.out.println("\n-->\n");
-					System.out.println("\nBeginning RR scheduling with time quantum of " + timeQuantum + ".");
+					System.out.print("Enter time quantum length:");
+					// int timeQuantum = in.nextInt();
+					in.close();
+					System.out.println("\n-->\nUsing RoundRobin Scheduling\n");
+					// scheduler = new RoundRobin(processList, timeQuantum);
 					
 					break;
 					
 				case 2:
-					System.out.print("Enter a filename of jobs data: ");
-					dataFile = fileInput.nextLine();
-									
-					processList = parseInputFile(dataFile);
-
-					System.out.println("\n-->\n");
-					scheduler = new Scheduler(processList, "SJF");
+					System.out.println("\n-->\nUsing SJF Scheduling\n\n");
+					// System.out.print("Enter filename of jobs data: ");
+					// dataFile = fileInput.nextLine();
+					// fileInput.close();
+					
+					processList = parseInputFile("jobs-testdata2.txt");
+					scheduler = new SJF(processList);
 					
 					break;
 					
