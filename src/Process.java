@@ -1,6 +1,5 @@
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * Process Class
@@ -14,6 +13,7 @@ public class Process {
 	private int id;
 	private ArrayList<Integer> cpuBurstList;
 	private ArrayList<Integer> ioBurstList;
+	@SuppressWarnings("unused")
 	private int theTime;
 	
 	/**
@@ -33,7 +33,7 @@ public class Process {
 	} // End default constructor
 	
 	/*
-	 * Begin Getters 
+	 * Begin Getters/Setters 
 	 */
 	public int getId() {
 		return id;
@@ -106,9 +106,5 @@ public class Process {
 	public void update(Clock theClock, Process observer) {
 		theTime = theClock.getTime();	
 	}
-	
-	
-	
-	
 
 } // End Process Class

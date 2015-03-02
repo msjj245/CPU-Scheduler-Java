@@ -7,6 +7,8 @@ import java.util.PriorityQueue;
 public class SJF extends Scheduler {
 	
 	private Clock theClock;
+	private final int READY_QUEUE_SIZE = 3;
+	// private final int CPU_SIZE = 1;
 	
 	/**
 	 * Default Constructor
@@ -17,7 +19,8 @@ public class SJF extends Scheduler {
 		super(processList);
 		
 		// Assign the comparator for the job time
-		jobQueue = new PriorityQueue<Process>(jobTimeComparator);
+		jobQueue = new LinkedList<Process>();
+		readyQueue = new PriorityQueue<Process>(jobTimeComparator);
 		
 		theClock = Clock.getInstance();
 		loadProcesses(processList);
@@ -29,17 +32,15 @@ public class SJF extends Scheduler {
 	}
 	
 	/**
-	 * Assigns a comparator for the totalJobTime of a Process
+	 * Assigns a comparator for the next CPU burst of a Process.
+	 * If the burst time is the same, compare the id for order.
 	 */
     public static Comparator<Process> jobTimeComparator = new Comparator<Process>(){
          
         @Override
         public int compare(Process p1, Process p2) {
         	
-        	int p1Burst = p1.peekNextCpuBurst();
-        	int p2Burst = p2.peekNextCpuBurst();
-        	
-        	if (p1Burst == p2Burst) {
+        	if (p1.peekNextCpuBurst() == p2.peekNextCpuBurst()) {
         		
         		if (p1.getId() > p2.getId()) {
         			
@@ -50,7 +51,7 @@ public class SJF extends Scheduler {
         			return -1;
         		}
         	}
-        	else if (p1Burst > p2Burst) {
+        	else if (p1.peekNextCpuBurst() > p2.peekNextCpuBurst()) {
         	
                 return 1;
         	}
@@ -72,31 +73,32 @@ public class SJF extends Scheduler {
 			
 			// (if) the CPU is empty, fill it from the ready queue
 			// (else) move the PCB from the CPU to Disk
-			if (CPU.isEmpty()) {
-				
-				CPU.add(readyQueue.remove());
-				
-			}
-			else if (!Disk.isEmpty() && (readyQueue.size() < readyQueue.getLimit()) 
+			if (!Disk.isEmpty() && (readyQueue.size() < READY_QUEUE_SIZE) 
 					&& ioWaitQueue.isEmpty() && CPU.isEmpty()) {
 				 
 				CPU.add(Disk.remove());
 			}
+			else if (CPU.isEmpty()) {
+				
+				CPU.add(readyQueue.remove());
+			}
 			printState();
 			run();
-			if (!ioWaitQueue.isEmpty() && (readyQueue.size() < readyQueue.getLimit())) {
+			if (!ioWaitQueue.isEmpty() && (readyQueue.size() < READY_QUEUE_SIZE)) {
 				
 				readyQueue.add(ioWaitQueue.remove());
 			}
 			else if (ioWaitQueue.isEmpty() && !jobQueue.isEmpty() 
-					&& (readyQueue.size() < readyQueue.getLimit())) {
+					&& (readyQueue.size() < READY_QUEUE_SIZE)) {
+				
 				
 				readyQueue.add(jobQueue.remove());
 			}
-			
+			// ELSE omitted intentionally
 		}
+		// END while
 
-	} // End begin().
+	} // End contextSwitch().
 	
 	/**
 	 * Uses Iterator to traverse through the jobQueue.
@@ -183,7 +185,7 @@ public class SJF extends Scheduler {
 		// System.out.println("JobQueue Order: " + jobQueue.toString());
 		
 		// load the first three processes into the readyQueue
-		for (int i = 0; i < readyQueue.getLimit(); i++) {
+		for (int i = 0; i < READY_QUEUE_SIZE; i++) {
 			
 			readyQueue.add(jobQueue.remove());
 		}
@@ -196,16 +198,17 @@ public class SJF extends Scheduler {
 	 */
 	public void printState() {
 		
-		System.out.printf("\nTime = %d\n\tCPU: %d\n\tJob Queue: %s\n\tReadyQueue: %s\n\t" +
-						"Disk Queue: %s\n\tIO Wait Queue: %s\n" +
-						"", theClock.getTime(), CPU.peek().getId(),
-						getJobQueueContents(), getReadyQueueContents(),
-						getDiskQueueContents(), getIoWaitQueueContents() );
+		System.out.printf("\nTime = %d\n", theClock.getTime());
+		System.out.printf("\t%-15s %3d\n", "CPU:", CPU.peek().getId());
+		System.out.printf("\t%-15s %4s\n", "Job Queue:", getJobQueueContents());
+		System.out.printf("\t%-15s %4s\n", "Ready Queue:", getReadyQueueContents());
+		System.out.printf("\t%-15s %4s\n", "Disk Queue:", getDiskQueueContents());
+		System.out.printf("\t%-15s %4s\n", "IOWait Queue:", getIoWaitQueueContents());			
 		
 	} // End printState().
 	
 	/**
-	 * Run the processes in the CPU and Disk
+	 * Run the processes in the CPU and Disk.
 	 */
 	private void run() {
 		
@@ -247,7 +250,6 @@ public class SJF extends Scheduler {
 						 */
 						if ( !Disk.isEmpty() ) {
 							
-							ioWaitQueue.add(ioProcess);
 							if (Disk.iterator().hasNext()) {
 								
 								ioProcess = Disk.remove();

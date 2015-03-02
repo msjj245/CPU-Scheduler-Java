@@ -7,9 +7,9 @@ import java.util.Queue;
 public abstract class Scheduler {
 	
 	protected Clock theClock;
-	protected LimitedQueue<Process> readyQueue;
+	protected PriorityQueue<Process> readyQueue;
 	protected Queue<Process> ioWaitQueue;
-	protected PriorityQueue<Process> jobQueue;
+	protected LinkedList<Process> jobQueue;
 	protected LimitedQueue<Process> CPU;
 	protected LinkedList<Process> Disk;
 	
@@ -19,7 +19,6 @@ public abstract class Scheduler {
 	public Scheduler(ArrayList<Process> processList) {
 		
 		theClock = Clock.getInstance();
-		readyQueue = new LimitedQueue<Process>(3);
 		ioWaitQueue = new LinkedList<Process>();
 		CPU = new LimitedQueue<Process>(1);
 		Disk = new LinkedList<Process>();
@@ -43,6 +42,5 @@ public abstract class Scheduler {
 	 * Prints the current state of the CPU Scheduler.
 	 */
 	public abstract void printState();
-	
 	
 } // End Scheduler Class

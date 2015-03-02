@@ -5,14 +5,13 @@
  * @author 	Magdalene Benson	<mebenson12@winona.edu>
  * @date	2/09/2015
  * 
- * A custom class to implement a Queue of limited size.
+ * A custom class to implement a Priority Queue of limited size.
  */
 
-import java.util.LinkedList;
-
+import java.util.PriorityQueue;
 
 @SuppressWarnings({ "serial", "hiding" })
-public class LimitedQueue<Process> extends LinkedList<Process> {
+public class LimitedQueue<Process> extends PriorityQueue<Process> {
 	
 	private int limit;
 	
@@ -38,7 +37,7 @@ public class LimitedQueue<Process> extends LinkedList<Process> {
 		// if it can fit, add it
 		if (size() < limit) {
 			
-			super.addLast(p);
+			super.add(p);
 			return true;
 		}
 		else {
@@ -46,17 +45,6 @@ public class LimitedQueue<Process> extends LinkedList<Process> {
 			return false;
 		}
     } // End custom add().
-	
-	@Override
-	/**
-	 * Custom remove method to mimic a deQueue method.
-	 * 
-	 * @return - Process object being removed
-	 */
-	public Process remove() {
-		
-		return super.removeFirst();
-	}
 	
 	/**
 	 * Returns the limit capacity of this queue
