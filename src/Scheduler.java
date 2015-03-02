@@ -10,8 +10,8 @@ public abstract class Scheduler {
 	protected LimitedQueue<Process> readyQueue;
 	protected Queue<Process> ioWaitQueue;
 	protected PriorityQueue<Process> jobQueue;
-	protected CPU CPU;
-	protected Disk diskQueue;
+	protected LimitedQueue<Process> CPU;
+	protected LinkedList<Process> Disk;
 	
 	/**
 	 * Default Constructor
@@ -21,8 +21,8 @@ public abstract class Scheduler {
 		theClock = Clock.getInstance();
 		readyQueue = new LimitedQueue<Process>(3);
 		ioWaitQueue = new LinkedList<Process>();
-		CPU = new CPU(1);
-		diskQueue = new Disk();
+		CPU = new LimitedQueue<Process>(1);
+		Disk = new LinkedList<Process>();
 		
 		
 	} // End Default Constructor
@@ -30,7 +30,7 @@ public abstract class Scheduler {
 	/**
 	 * Begin scheduling algorithm
 	 */
-	public abstract void begin();
+	public abstract void contextSwitch();
 	
 	/**
 	 * Loads all processes into the job queue,
@@ -53,6 +53,8 @@ public abstract class Scheduler {
 			System.out.println(thisProcess.toString());
 			jobQueue.add(thisProcess);
 		}
+		
+		System.out.println("JobQueue Order: " + jobQueue.toString());
 		
 		// load the first three processes into the readyQueue
 		for (int i = 0; i < readyQueue.getLimit(); i++) {

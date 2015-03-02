@@ -1,11 +1,12 @@
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.PriorityQueue;
 
 public class SJF extends Scheduler {
 	
-	boolean state;
+	private Clock theClock;
 	
 	/**
 	 * Default Constructor
@@ -19,11 +20,12 @@ public class SJF extends Scheduler {
 		jobQueue = new PriorityQueue<Process>(jobTimeComparator);
 		
 		loadProcesses(processList);
+		theClock = Clock.getInstance();
 		
 		System.out.println("\nTimer is 0-based\n");
 		System.out.println("/////////////////////////////////");
 		
-		begin();
+		contextSwitch();
 	}
 	
 	/**
@@ -33,7 +35,18 @@ public class SJF extends Scheduler {
          
         @Override
         public int compare(Process p1, Process p2) {
-           return (int) (p1.getNextCpuBurst() - p2.getNextCpuBurst());
+        	
+        	int ret = 0;
+        	
+        	if (p1.getNextCpuBurst() == p2.getNextCpuBurst()) {
+        		
+        		ret = (p1.getId() - p2.getId());
+        	}
+        	else {
+        	
+                ret = (int) (p1.getNextCpuBurst() - p2.getNextCpuBurst());
+        	}
+        	return ret;
         }
         
     }; // End jobTimeComparator().
@@ -42,7 +55,7 @@ public class SJF extends Scheduler {
 	/**
 	 * Begin SJF Algorithm
 	 */
-	public void begin() {
+	public void contextSwitch() {
 		
 		// while the ready queue still has processes to run
 		while(readyQueue.iterator().hasNext()) {
@@ -51,31 +64,26 @@ public class SJF extends Scheduler {
 			// (else) move the PCB from the CPU to Disk
 			if (CPU.isEmpty()) {
 				
-				// from the ready queue
 				CPU.add(readyQueue.remove());
-				
-				// (if) the wait queue has something waiting
-				// and the ready queue has room
-				// add it to the ready queue
-				// (else if) the wait queue is empty and the job queue is not
-				// and the ready queue has room, add from the job queue to the ready queue
-				if (!ioWaitQueue.isEmpty() && (readyQueue.size() < readyQueue.getLimit())) {
-					
-					readyQueue.add(ioWaitQueue.remove());
-				}
-				else if (ioWaitQueue.isEmpty() && !jobQueue.isEmpty() 
-						&& (readyQueue.size() < readyQueue.getLimit())) {
-					
-					readyQueue.add(jobQueue.remove());
-				}
 				
 			}
 			else {
 				
-				diskQueue.add(CPU.remove());
+				Disk.add(CPU.remove());
 			}
 			printState();
 			run();
+			
+			if (!ioWaitQueue.isEmpty() && (readyQueue.size() < readyQueue.getLimit())) {
+				
+				readyQueue.add(ioWaitQueue.remove());
+			}
+			else if (ioWaitQueue.isEmpty() && !jobQueue.isEmpty() 
+					&& (readyQueue.size() < readyQueue.getLimit())) {
+				
+				readyQueue.add(jobQueue.remove());
+			}
+			
 		}
 
 	} // End begin().
@@ -106,8 +114,6 @@ public class SJF extends Scheduler {
 		while (readyQueueIterator.hasNext()) {
 			ret += readyQueueIterator.next().getId() + " ";
 		}
-		// don't include the first one since it is being added to the CPU
-		ret = ret.substring(2);
 		return ret;
 				
 	} // End getReadyQueueContents().
@@ -119,9 +125,9 @@ public class SJF extends Scheduler {
 	public String getDiskQueueContents() {
 		
 		String ret = "";
-		Iterator<Process> diskQueueIterator = diskQueue.iterator();
-		while (diskQueueIterator.hasNext()) {
-			ret += diskQueueIterator.next().getId() + " ";
+		Iterator<Process> diskIterator = Disk.iterator();
+		while (diskIterator.hasNext()) {
+			ret += diskIterator.next().getId() + " ";
 		}
 		return ret;
 				
@@ -157,20 +163,58 @@ public class SJF extends Scheduler {
 		
 	} // End printState().
 	
+	/**
+	 * Run the processes in the CPU and Disk
+	 */
 	private void run() {
 		
-		if (!CPU.isEmpty()) {
-			CPU.run();
-			if (!CPU.isEmpty()) {
+		if ( !CPU.isEmpty() ) {
+			
+			Process cpuProcess = CPU.remove();
+			int cpuBurst = cpuProcess.getNextCpuBurst();
+			
+			Process ioProcess = null;
+			int ioBurst = 0;
+			
+			if ( !Disk.isEmpty() ) {
 				
-				diskQueue.add(CPU.remove());
+				ioProcess = Disk.remove();
+				ioBurst = ioProcess.getNextIoBurst();
 			}
-			if ( (readyQueue.size() != readyQueue.getLimit()) && !jobQueue.isEmpty()) {
-				readyQueue.add(jobQueue.remove());
+			
+			while (cpuBurst > 0) {
+				
+				theClock.tick();
+				
+				if (ioProcess != null && ioBurst > 0) {
+					
+					ioBurst--;
+				}
+				else {
+					
+					// get the next ioProcess
+					if ( !Disk.isEmpty() ) {
+						
+					}
+				}
+				cpuBurst--;
 			}
-		}
-		if (!diskQueue.isEmpty()) {
-			// diskQueue.run();
+			
+			if (ioBurst > 0) {
+				
+				ioProcess.returnIoBurst(ioBurst);
+				Disk.addFirst(ioProcess);
+			}
+			
+			if (cpuProcess.getCpuBurstIndex() == 0) {
+				
+				cpuProcess = null;
+			}
+			else {
+				
+				Disk.add(cpuProcess);
+			}
+		
 		}
 		
 	} // End run().

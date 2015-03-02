@@ -10,7 +10,7 @@ public class RoundRobin extends Scheduler {
 	}
 
 	@Override
-	public void begin() {
+	public void contextSwitch() {
 		// TODO Auto-generated method stub
 
 	}

@@ -12,12 +12,8 @@ import java.util.List;
 public class Process {
 	
 	private int id;
-	private List<Integer> cpuBurst;
-	private List<Integer> ioBurst;
-	//private Iterator cpuIterator;
-	//private Iterator ioIterator;
-	private int cpuCounter;
-	private int ioCounter;
+	private ArrayList<Integer> cpuBurstList;
+	private ArrayList<Integer> ioBurstList;
 	private int theTime;
 	
 	/**
@@ -27,15 +23,12 @@ public class Process {
 	 * @param cpuBurst - the list of CPU bursts
 	 * @param ioBurst - the list of IO bursts
 	 */
-	public Process(int id, List<Integer> cpuBurst, List<Integer> ioBurst) {
+	public Process(int id, ArrayList<Integer> cpuBurst, ArrayList<Integer> ioBurst) {
 		
 		this.id = id;
-		this.cpuBurst = cpuBurst;
-		this.ioBurst = ioBurst;
-		//cpuIterator = cpuBurst.iterator();
-		//ioIterator = ioBurst.iterator();
-		cpuCounter = cpuBurst.size();
-		ioCounter = ioBurst.size();
+		this.cpuBurstList = cpuBurst;
+		this.ioBurstList = ioBurst;
+		
 		
 	} // End default constructor
 	
@@ -45,29 +38,39 @@ public class Process {
 	public int getId() {
 		return id;
 	}
-	public List<Integer> getCpuBurst() {
-		return cpuBurst;
-	}
 	public int getNextCpuBurst() {
-		return cpuBurst.get(0);
-	}
-	public List<Integer> getIoBurst() {
-		return ioBurst;
+		
+		if (cpuBurstList.iterator().hasNext()) {
+			return cpuBurstList.iterator().next();
+		}
+		else {
+			return 0;
+		}
 	}
 	public int getNextIoBurst() {
-		return ioBurst.get(0);
+		
+		if (ioBurstList.iterator().hasNext()) {
+			return ioBurstList.iterator().next();
+		}
+		else {
+			return 0;
+		}
 	}
-	public int getCpuCounter() {
-		return cpuCounter;
+	public void returnIoBurst(int burst) {
+		
+		ioBurstList.add(0, burst);
 	}
-	public void setCpuCounter(int cpuCounter) {
-		this.cpuCounter = cpuCounter;
+	public Iterator<Integer> getCpuIterator() {
+		return cpuBurstList.iterator();
 	}
-	public int getIoCounter() {
-		return ioCounter;
+	public Iterator<Integer> getIoIterator() {
+		return ioBurstList.iterator();
 	}
-	public void setIoCounter(int ioCounter) {
-		this.ioCounter = ioCounter;
+	public int getCpuBurstIndex() {
+		return cpuBurstList.size();
+	}
+	public int getIoBurstIndex() {
+		return ioBurstList.size();
 	}
 
 	@Override
@@ -76,27 +79,11 @@ public class Process {
 		String text = String.format("\n   PCB %d\n\n\tCPU Bursts: %s\n\tIO Bursts: %s\n\tcpuBurstIndex: %d" +
 				"\n\tioBurstIndex: %d\n\tremainingCPUBurstTime: %d\n\tremainingIOBurstTime: %d" +
 				"\n\tremainingTicksInTimeslice: %d",
-				this.getId(), cpuBurst.toString(), ioBurst.toString(), -1, -1, 0, 0, 0);
+				this.getId(), cpuBurstList.toString(), ioBurstList.toString(), -1, -1, 0, 0, 0);
 		
 		return text;
 		
 	} // End toString().
-	
-	/**
-	 * Runs the CPU burst.
-	 */
-	public void runCPUBurst() {
-		
-		
-	} // End runCPUBurst().
-	
-	/**
-	 * Runs the IO burst.
-	 */
-	public void runIOBurst() {
-		
-		
-	} // End runIOBurst().
 
 	public void update(Clock theClock, Process observer) {
 		theTime = theClock.getTime();	
