@@ -19,8 +19,8 @@ public class SJF extends Scheduler {
 		// Assign the comparator for the job time
 		jobQueue = new PriorityQueue<Process>(jobTimeComparator);
 		
-		loadProcesses(processList);
 		theClock = Clock.getInstance();
+		loadProcesses(processList);
 		
 		System.out.println("\nTimer is 0-based\n");
 		System.out.println("/////////////////////////////////");
@@ -36,17 +36,27 @@ public class SJF extends Scheduler {
         @Override
         public int compare(Process p1, Process p2) {
         	
-        	int ret = 0;
+        	int p1Burst = p1.peekNextCpuBurst();
+        	int p2Burst = p2.peekNextCpuBurst();
         	
-        	if (p1.getNextCpuBurst() == p2.getNextCpuBurst()) {
+        	if (p1Burst == p2Burst) {
         		
-        		ret = (p1.getId() - p2.getId());
+        		if (p1.getId() > p2.getId()) {
+        			
+        			return 1;
+        		}
+        		else {
+        			
+        			return -1;
+        		}
+        	}
+        	else if (p1Burst > p2Burst) {
+        	
+                return 1;
         	}
         	else {
-        	
-                ret = (int) (p1.getNextCpuBurst() - p2.getNextCpuBurst());
+        		return -1;
         	}
-        	return ret;
         }
         
     }; // End jobTimeComparator().
@@ -67,13 +77,13 @@ public class SJF extends Scheduler {
 				CPU.add(readyQueue.remove());
 				
 			}
-			else {
-				
-				Disk.add(CPU.remove());
+			else if (!Disk.isEmpty() && (readyQueue.size() < readyQueue.getLimit()) 
+					&& ioWaitQueue.isEmpty() && CPU.isEmpty()) {
+				 
+				CPU.add(Disk.remove());
 			}
 			printState();
 			run();
-			
 			if (!ioWaitQueue.isEmpty() && (readyQueue.size() < readyQueue.getLimit())) {
 				
 				readyQueue.add(ioWaitQueue.remove());
@@ -148,6 +158,37 @@ public class SJF extends Scheduler {
 				
 	} // End getIoWaitQueueContents().
 	
+	/**
+	 * Loads all processes into the job queue,
+	 * then 3 processes to the ready queue.
+	 * 
+	 * @param processList
+	 */
+	public void loadProcesses(ArrayList<Process> processList) {
+		
+		System.out.println("\nInitial Job Queue:  =======================");
+		
+		// load the processes into the jobQueue
+		int processListSize = processList.size();
+		
+		for (int j = 0; j < processListSize; j++) {
+			
+			Process thisProcess = processList.remove(0);
+			theClock.addObserver(thisProcess);
+			
+			System.out.println(thisProcess.toString());
+			jobQueue.add(thisProcess);
+		}
+		
+		// System.out.println("JobQueue Order: " + jobQueue.toString());
+		
+		// load the first three processes into the readyQueue
+		for (int i = 0; i < readyQueue.getLimit(); i++) {
+			
+			readyQueue.add(jobQueue.remove());
+		}
+		
+	} // End loadProcesses().
 
 	@Override
 	/**
@@ -176,36 +217,67 @@ public class SJF extends Scheduler {
 			Process ioProcess = null;
 			int ioBurst = 0;
 			
+			/*
+			 * Get the process on the disk if there is one, to decrement that too
+			 */
 			if ( !Disk.isEmpty() ) {
 				
 				ioProcess = Disk.remove();
 				ioBurst = ioProcess.getNextIoBurst();
 			}
 			
+			/*
+			 * Let the CPU burst guide the clock ticks
+			 */
 			while (cpuBurst > 0) {
 				
 				theClock.tick();
 				
-				if (ioProcess != null && ioBurst > 0) {
+				if (ioProcess != null) {
 					
-					ioBurst--;
-				}
-				else {
-					
-					// get the next ioProcess
-					if ( !Disk.isEmpty() ) {
+					if (ioBurst > 0) {
 						
+						ioBurst--;
+					}
+					else if (ioBurst == 0) {
+						
+						/*
+						 * The Disk process is done but the CPU is still ticking the clock.
+						 * Move on to the next process in the Disk.
+						 */
+						if ( !Disk.isEmpty() ) {
+							
+							ioWaitQueue.add(ioProcess);
+							if (Disk.iterator().hasNext()) {
+								
+								ioProcess = Disk.remove();
+								ioBurst = ioProcess.getNextIoBurst();
+							}
+							// ELSE omitted intentionally
+						}
+						// ELSE omitted intentionally
 					}
 				}
+				// ELSE omitted intentionally
+				
 				cpuBurst--;
 			}
+			// END while
 			
+			/*
+			 * Disk process didn't finish running io burst,
+			 * return it to the Disk head.
+			 */
 			if (ioBurst > 0) {
 				
 				ioProcess.returnIoBurst(ioBurst);
 				Disk.addFirst(ioProcess);
 			}
+			// ELSE omitted intentionally
 			
+			/*
+			 * No more CPU bursts to run, delete/remove the process as finished.
+			 */
 			if (cpuProcess.getCpuBurstIndex() == 0) {
 				
 				cpuProcess = null;
@@ -216,6 +288,7 @@ public class SJF extends Scheduler {
 			}
 		
 		}
+		// ELSE omitted intentionally
 		
 	} // End run().
 

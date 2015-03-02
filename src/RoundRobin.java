@@ -32,4 +32,10 @@ public class RoundRobin extends Scheduler {
         }
     };
 
+	@Override
+	public void loadProcesses(ArrayList<Process> processList) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

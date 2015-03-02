@@ -24,7 +24,6 @@ public abstract class Scheduler {
 		CPU = new LimitedQueue<Process>(1);
 		Disk = new LinkedList<Process>();
 		
-		
 	} // End Default Constructor
 	
 	/**
@@ -38,31 +37,7 @@ public abstract class Scheduler {
 	 * 
 	 * @param processList
 	 */
-	public void loadProcesses(ArrayList<Process> processList) {
-		
-		System.out.println("\nInitial Job Queue:  =======================");
-		
-		// load the processes into the jobQueue
-		int processListSize = processList.size();
-		
-		for (int j = 0; j < processListSize; j++) {
-			
-			Process thisProcess = processList.remove(0);
-			theClock.addObserver(thisProcess);
-			
-			System.out.println(thisProcess.toString());
-			jobQueue.add(thisProcess);
-		}
-		
-		System.out.println("JobQueue Order: " + jobQueue.toString());
-		
-		// load the first three processes into the readyQueue
-		for (int i = 0; i < readyQueue.getLimit(); i++) {
-			
-			readyQueue.add(jobQueue.remove());
-		}
-		
-	} // End loadProcesses().
+	public abstract void loadProcesses(ArrayList<Process> processList);
 	
 	/**
 	 * Prints the current state of the CPU Scheduler.

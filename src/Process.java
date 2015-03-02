@@ -41,7 +41,7 @@ public class Process {
 	public int getNextCpuBurst() {
 		
 		if (cpuBurstList.iterator().hasNext()) {
-			return cpuBurstList.iterator().next();
+			return cpuBurstList.get(0);
 		}
 		else {
 			return 0;
@@ -50,7 +50,7 @@ public class Process {
 	public int getNextIoBurst() {
 		
 		if (ioBurstList.iterator().hasNext()) {
-			return ioBurstList.iterator().next();
+			return ioBurstList.get(0);
 		}
 		else {
 			return 0;
@@ -71,6 +71,24 @@ public class Process {
 	}
 	public int getIoBurstIndex() {
 		return ioBurstList.size();
+	}
+	public int peekNextCpuBurst() {
+		
+		if (cpuBurstList.iterator().hasNext()) {
+			return cpuBurstList.iterator().next();
+		}
+		else {
+			return 0;
+		}
+	}
+	public int peekNextIoBurst() {
+		
+		if (ioBurstList.iterator().hasNext()) {
+			return ioBurstList.iterator().next();
+		}
+		else {
+			return 0;
+		}
 	}
 
 	@Override
