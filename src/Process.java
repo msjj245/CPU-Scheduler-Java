@@ -13,8 +13,6 @@ public class Process {
 	private int id;
 	private ArrayList<Integer> cpuBurstList;
 	private ArrayList<Integer> ioBurstList;
-	@SuppressWarnings("unused")
-	private int theTime;
 	
 	/**
 	 * Default Constructor
@@ -41,7 +39,7 @@ public class Process {
 	public int getNextCpuBurst() {
 		
 		if (cpuBurstList.iterator().hasNext()) {
-			return cpuBurstList.get(0);
+			return cpuBurstList.remove(0);
 		}
 		else {
 			return 0;
@@ -50,7 +48,7 @@ public class Process {
 	public int getNextIoBurst() {
 		
 		if (ioBurstList.iterator().hasNext()) {
-			return ioBurstList.get(0);
+			return ioBurstList.remove(0);
 		}
 		else {
 			return 0;
@@ -90,7 +88,15 @@ public class Process {
 			return 0;
 		}
 	}
-
+	public void setNextCpuBurst(int i) {
+		
+		cpuBurstList.set(0, i);
+	}
+	public void setNextIoBurst(int i) {
+		
+		ioBurstList.set(0,  i);
+	}
+	
 	@Override
 	public String toString() {
 		
@@ -102,9 +108,5 @@ public class Process {
 		return text;
 		
 	} // End toString().
-
-	public void update(Clock theClock, Process observer) {
-		theTime = theClock.getTime();	
-	}
 
 } // End Process Class

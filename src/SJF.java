@@ -1,14 +1,12 @@
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.PriorityQueue;
 
 public class SJF extends Scheduler {
 	
 	private Clock theClock;
 	private final int READY_QUEUE_SIZE = 3;
-	// private final int CPU_SIZE = 1;
 	
 	/**
 	 * Default Constructor
@@ -19,9 +17,7 @@ public class SJF extends Scheduler {
 		super(processList);
 		
 		// Assign the comparator for the job time
-		jobQueue = new LinkedList<Process>();
-		readyQueue = new PriorityQueue<Process>(jobTimeComparator);
-		
+		readyQueue = new PriorityQueue<Process>(burstTimeComparator);
 		theClock = Clock.getInstance();
 		loadProcesses(processList);
 		
@@ -35,7 +31,7 @@ public class SJF extends Scheduler {
 	 * Assigns a comparator for the next CPU burst of a Process.
 	 * If the burst time is the same, compare the id for order.
 	 */
-    public static Comparator<Process> jobTimeComparator = new Comparator<Process>(){
+    public static Comparator<Process> burstTimeComparator = new Comparator<Process>(){
          
         @Override
         public int compare(Process p1, Process p2) {
@@ -56,6 +52,7 @@ public class SJF extends Scheduler {
                 return 1;
         	}
         	else {
+        		
         		return -1;
         	}
         }
@@ -68,35 +65,40 @@ public class SJF extends Scheduler {
 	 */
 	public void contextSwitch() {
 		
-		// while the ready queue still has processes to run
 		while(readyQueue.iterator().hasNext()) {
 			
-			// (if) the CPU is empty, fill it from the ready queue
-			// (else) move the PCB from the CPU to Disk
-			if (!Disk.isEmpty() && (readyQueue.size() < READY_QUEUE_SIZE) 
-					&& ioWaitQueue.isEmpty() && CPU.isEmpty()) {
-				 
-				CPU.add(Disk.remove());
-			}
-			else if (CPU.isEmpty()) {
+			if (CPU.isEmpty()) {
 				
 				CPU.add(readyQueue.remove());
 			}
+			// ELSE omitted intentionally
+			
 			printState();
 			run();
+			
+			/*
+			 * Refill the readyQueue
+			 */
 			if (!ioWaitQueue.isEmpty() && (readyQueue.size() < READY_QUEUE_SIZE)) {
 				
 				readyQueue.add(ioWaitQueue.remove());
 			}
-			else if (ioWaitQueue.isEmpty() && !jobQueue.isEmpty() 
-					&& (readyQueue.size() < READY_QUEUE_SIZE)) {
-				
+			else if (!jobQueue.isEmpty() && (readyQueue.size() < READY_QUEUE_SIZE)) {
 				
 				readyQueue.add(jobQueue.remove());
 			}
 			// ELSE omitted intentionally
 		}
 		// END while
+		
+		if ( readyQueue.isEmpty() && CPU.isEmpty() ) {
+			
+			/*
+			 * Print the end state
+			 */
+			printState();
+		}
+		// ELSE omitted intentionally
 
 	} // End contextSwitch().
 	
@@ -161,6 +163,19 @@ public class SJF extends Scheduler {
 	} // End getIoWaitQueueContents().
 	
 	/**
+	 * Prints the contents of the CPU.
+	 */
+	public void getCpuContents() {
+		
+		if (!CPU.isEmpty()) {
+			System.out.printf("\t%-15s %3d\n", "CPU:", CPU.peek().getId());
+		}
+		else {
+			System.out.printf("\t%-15s\n", "CPU:");
+		}
+	}
+	
+	/**
 	 * Loads all processes into the job queue,
 	 * then 3 processes to the ready queue.
 	 * 
@@ -170,21 +185,21 @@ public class SJF extends Scheduler {
 		
 		System.out.println("\nInitial Job Queue:  =======================");
 		
-		// load the processes into the jobQueue
+		/*
+		 *  load the processes into the jobQueue
+		 */
 		int processListSize = processList.size();
 		
 		for (int j = 0; j < processListSize; j++) {
 			
 			Process thisProcess = processList.remove(0);
-			theClock.addObserver(thisProcess);
-			
 			System.out.println(thisProcess.toString());
 			jobQueue.add(thisProcess);
 		}
-		
-		// System.out.println("JobQueue Order: " + jobQueue.toString());
-		
-		// load the first three processes into the readyQueue
+				
+		/*
+		 * load the first three processes into the readyQueue
+		 */
 		for (int i = 0; i < READY_QUEUE_SIZE; i++) {
 			
 			readyQueue.add(jobQueue.remove());
@@ -198,8 +213,10 @@ public class SJF extends Scheduler {
 	 */
 	public void printState() {
 		
+		
+		
 		System.out.printf("\nTime = %d\n", theClock.getTime());
-		System.out.printf("\t%-15s %3d\n", "CPU:", CPU.peek().getId());
+		getCpuContents();
 		System.out.printf("\t%-15s %4s\n", "Job Queue:", getJobQueueContents());
 		System.out.printf("\t%-15s %4s\n", "Ready Queue:", getReadyQueueContents());
 		System.out.printf("\t%-15s %4s\n", "Disk Queue:", getDiskQueueContents());
@@ -215,19 +232,7 @@ public class SJF extends Scheduler {
 		if ( !CPU.isEmpty() ) {
 			
 			Process cpuProcess = CPU.remove();
-			int cpuBurst = cpuProcess.getNextCpuBurst();
-			
-			Process ioProcess = null;
-			int ioBurst = 0;
-			
-			/*
-			 * Get the process on the disk if there is one, to decrement that too
-			 */
-			if ( !Disk.isEmpty() ) {
-				
-				ioProcess = Disk.remove();
-				ioBurst = ioProcess.getNextIoBurst();
-			}
+			int cpuBurst = cpuProcess.getNextCpuBurst();	
 			
 			/*
 			 * Let the CPU burst guide the clock ticks
@@ -235,47 +240,20 @@ public class SJF extends Scheduler {
 			while (cpuBurst > 0) {
 				
 				theClock.tick();
+				cpuBurst--;
 				
-				if (ioProcess != null) {
+				if (!Disk.isEmpty()) {
 					
-					if (ioBurst > 0) {
+					Disk.decrement();
+					
+					while (Disk.isCompleted()) {
 						
-						ioBurst--;
-					}
-					else if (ioBurst == 0) {
-						
-						/*
-						 * The Disk process is done but the CPU is still ticking the clock.
-						 * Move on to the next process in the Disk.
-						 */
-						if ( !Disk.isEmpty() ) {
-							
-							if (Disk.iterator().hasNext()) {
-								
-								ioProcess = Disk.remove();
-								ioBurst = ioProcess.getNextIoBurst();
-							}
-							// ELSE omitted intentionally
-						}
-						// ELSE omitted intentionally
+						ioWaitQueue.add(Disk.remove());
 					}
 				}
 				// ELSE omitted intentionally
-				
-				cpuBurst--;
 			}
 			// END while
-			
-			/*
-			 * Disk process didn't finish running io burst,
-			 * return it to the Disk head.
-			 */
-			if (ioBurst > 0) {
-				
-				ioProcess.returnIoBurst(ioBurst);
-				Disk.addFirst(ioProcess);
-			}
-			// ELSE omitted intentionally
 			
 			/*
 			 * No more CPU bursts to run, delete/remove the process as finished.
@@ -289,6 +267,16 @@ public class SJF extends Scheduler {
 				Disk.add(cpuProcess);
 			}
 		
+		}
+		else if (CPU.isEmpty() && !Disk.isEmpty() ) {
+			
+			theClock.tick();
+			Disk.decrement();
+			
+			while(Disk.isCompleted()) {
+				
+				ioWaitQueue.add(Disk.remove());
+			}
 		}
 		// ELSE omitted intentionally
 		

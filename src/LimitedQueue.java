@@ -55,4 +55,14 @@ public class LimitedQueue<Process> extends PriorityQueue<Process> {
 		return limit;
 	}
 	
+	/**
+	 * Returns a check if the ReadyQueue is full or not
+	 * 
+	 * @return - true if full, false otherwise
+	 */
+	public boolean full() {
+		
+		return this.size() >= limit;
+	}
+	
 } // End LimitedQueue Class

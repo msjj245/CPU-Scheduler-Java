@@ -1,6 +1,3 @@
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Clock Class
  * @author 	Magdalene Benson	<mebenson12@winona.edu>
@@ -13,7 +10,6 @@ import java.util.List;
 public class Clock {
 
 	private static Clock uniqueInstance = new Clock();
-	private List<Process> observers = new ArrayList<Process>();
 	private int time;
 	
 	// Protected Constructor
@@ -43,19 +39,10 @@ public class Clock {
 	 * Increments the Clock time.
 	 */
 	public void tick() {
-		time += 1;
-		notifyAllObservers();
+		
+		time++;
 	}
 	
-	public void addObserver(Process p) {
-		observers.add(p);
-	}
-	
-	public void notifyAllObservers() {
-		for (Process observer : observers) {
-			observer.update(this, observer);
-		}
-	}
 	
 	/**
 	 * Method:	getTime()
@@ -64,7 +51,8 @@ public class Clock {
 	 * @return - time
 	 */
 	public int getTime() {
+		
 		return time;
 	}
 	
-}
+} // END CLASS

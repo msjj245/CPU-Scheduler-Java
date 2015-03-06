@@ -11,7 +11,7 @@ public abstract class Scheduler {
 	protected Queue<Process> ioWaitQueue;
 	protected LinkedList<Process> jobQueue;
 	protected LimitedQueue<Process> CPU;
-	protected LinkedList<Process> Disk;
+	protected Disk Disk;
 	
 	/**
 	 * Default Constructor
@@ -20,8 +20,9 @@ public abstract class Scheduler {
 		
 		theClock = Clock.getInstance();
 		ioWaitQueue = new LinkedList<Process>();
+		jobQueue = new LinkedList<Process>();
 		CPU = new LimitedQueue<Process>(1);
-		Disk = new LinkedList<Process>();
+		Disk = new Disk();
 		
 	} // End Default Constructor
 	
