@@ -6,6 +6,9 @@ import java.util.PriorityQueue;
 @SuppressWarnings("serial")
 public class Disk extends PriorityQueue<Process>{
 	
+	/*
+	 * Default Constructor
+	 */
 	public Disk() {
 		
 		super(burstTimeComparator);

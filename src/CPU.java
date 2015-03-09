@@ -12,6 +12,7 @@ public class CPU extends LimitedQueue<Process> {
 	 * Default Constructor
 	 */
 	public CPU(int limit) {
+		
 		super(limit);
 	}
 	

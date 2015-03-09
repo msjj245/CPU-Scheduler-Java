@@ -16,9 +16,11 @@ public class SJF extends Scheduler {
 		
 		super(processList);
 		
-		// Assign the comparator for the job time
+		/*
+		 * Assigns the readyQueue a burst time comparator
+		 */
 		readyQueue = new PriorityQueue<Process>(burstTimeComparator);
-		theClock = Clock.getInstance();
+		
 		loadProcesses(processList);
 		
 		System.out.println("\nTimer is 0-based\n");
@@ -30,6 +32,7 @@ public class SJF extends Scheduler {
 	/**
 	 * Assigns a comparator for the next CPU burst of a Process.
 	 * If the burst time is the same, compare the id for order.
+	 * Smaller id is a greater priority.
 	 */
     public static Comparator<Process> burstTimeComparator = new Comparator<Process>(){
          
@@ -65,8 +68,14 @@ public class SJF extends Scheduler {
 	 */
 	public void contextSwitch() {
 		
+		/*
+		 * While there are still processes to run..
+		 */
 		while(readyQueue.iterator().hasNext()) {
 			
+			/*
+			 * Fill the CPU from the readyQueue
+			 */
 			if (CPU.isEmpty()) {
 				
 				CPU.add(readyQueue.remove());
@@ -77,7 +86,10 @@ public class SJF extends Scheduler {
 			run();
 			
 			/*
-			 * Refill the readyQueue
+			 * Refill the readyQueue if there is room
+			 * 
+			 * If the IoWaitQueue has something grab it from there first
+			 * Else grab from the jobQueue
 			 */
 			if (!ioWaitQueue.isEmpty() && (readyQueue.size() < READY_QUEUE_SIZE)) {
 				
@@ -91,6 +103,9 @@ public class SJF extends Scheduler {
 		}
 		// END while
 		
+		/*
+		 * All the processes are finished
+		 */
 		if ( readyQueue.isEmpty() && CPU.isEmpty() ) {
 			
 			/*
@@ -101,21 +116,6 @@ public class SJF extends Scheduler {
 		// ELSE omitted intentionally
 
 	} // End contextSwitch().
-	
-	/**
-	 * Uses Iterator to traverse through the jobQueue.
-	 * @return String of jobQueue id's.
-	 */
-	public String getJobQueueContents() {
-		
-		String ret = "";
-		Iterator<Process> jobQueueIterator = jobQueue.iterator();
-		while (jobQueueIterator.hasNext()) {
-			ret += jobQueueIterator.next().getId() + " ";
-		}
-		return ret;
-				
-	} // End getJobQueueContents().
 	
 	/**
 	 * Uses Iterator to traverse through the readyQueue.
@@ -131,49 +131,6 @@ public class SJF extends Scheduler {
 		return ret;
 				
 	} // End getReadyQueueContents().
-	
-	/**
-	 * Uses Iterator to traverse through the diskQueue.
-	 * @return String of diskQueue id's.
-	 */
-	public String getDiskQueueContents() {
-		
-		String ret = "";
-		Iterator<Process> diskIterator = Disk.iterator();
-		while (diskIterator.hasNext()) {
-			ret += diskIterator.next().getId() + " ";
-		}
-		return ret;
-				
-	} // End getReadyQueueContents().
-	
-	/**
-	 * Uses Iterator to traverse through the ioWaitQueue.
-	 * @return String of ioWaitQueue id's.
-	 */
-	public String getIoWaitQueueContents() {
-		
-		String ret = "";
-		Iterator<Process> IoWaitQueueIterator = ioWaitQueue.iterator();
-		while (IoWaitQueueIterator.hasNext()) {
-			ret += IoWaitQueueIterator.next().getId() + " ";
-		}
-		return ret;
-				
-	} // End getIoWaitQueueContents().
-	
-	/**
-	 * Prints the contents of the CPU.
-	 */
-	public void getCpuContents() {
-		
-		if (!CPU.isEmpty()) {
-			System.out.printf("\t%-15s %3d\n", "CPU:", CPU.peek().getId());
-		}
-		else {
-			System.out.printf("\t%-15s\n", "CPU:");
-		}
-	}
 	
 	/**
 	 * Loads all processes into the job queue,
@@ -212,8 +169,6 @@ public class SJF extends Scheduler {
 	 * Prints the current state of the Scheduler.
 	 */
 	public void printState() {
-		
-		
 		
 		System.out.printf("\nTime = %d\n", theClock.getTime());
 		getCpuContents();

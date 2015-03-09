@@ -9,16 +9,16 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Client {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		
 		int command;
-		Scanner in = new Scanner(System.in);
-		Scanner fileInput = new Scanner(System.in);
+		Scanner input = new Scanner(System.in);
 		ArrayList<Process> processList;
 		String dataFile;
 		@SuppressWarnings("unused")
@@ -30,38 +30,43 @@ public class Client {
 		System.out.println("\t1. Round Robin (RR)\n" +
 							   "\t2. Shortest Job First (SJF)");
 			
-		// Read user command (make sure it is the correct input format)
-		command = in.nextInt();
+		/*
+		 * Read user command (make sure it is the correct input format)
+		 */
+		command = input.nextInt();
+		input.nextLine();
+		
 		if (command > 2 || command < 0) {
+			
 			System.out.println("Sorry, you must enter a command of 1 or 2.\n");
-			System.exit(0);;
+			System.exit(0);
 		} else {
 			
 			switch(command) {
 			
 				case 1:
-					System.out.println("-->\nUsing RoundRobin Scheduling\n\n");
-					System.out.print("Enter a filename of jobs data: ");
-					dataFile = fileInput.nextLine();
-					fileInput.close();
 					
-					processList = parseInputFile(dataFile);
+					int timeQuantum = 0;
+					System.out.print("Enter a filename of jobs data: ");
+					// dataFile = input.nextLine();
+					
+					processList = parseInputFile("jobs-testdata2.txt");
 					
 					System.out.print("Enter time quantum length:");
-					// int timeQuantum = in.nextInt();
-					in.close();
-					System.out.println("\n-->\nUsing RoundRobin Scheduling\n");
-					// scheduler = new RoundRobin(processList, timeQuantum);
+					timeQuantum = 2; // input.nextInt();
+					
+					System.out.println("\n-->\nUsing RoundRobin Scheduling with a time quantum of " + timeQuantum + "\n");
+					scheduler = new RoundRobin(processList, timeQuantum);
 					
 					break;
 					
 				case 2:
-					System.out.println("\n-->\nUsing SJF Scheduling\n\n");
-					// System.out.print("Enter filename of jobs data: ");
-					// dataFile = fileInput.nextLine();
-					// fileInput.close();
 					
-					processList = parseInputFile("jobs-testdata2.txt");
+					System.out.println("\n-->\nUsing SJF Scheduling\n\n");
+					System.out.print("Enter filename of jobs data: ");
+					dataFile = input.nextLine();
+					
+					processList = parseInputFile(dataFile);
 					scheduler = new SJF(processList);
 					
 					break;
