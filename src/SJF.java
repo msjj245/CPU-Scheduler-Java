@@ -7,6 +7,7 @@ public class SJF extends Scheduler {
 	
 	private Clock theClock;
 	private final int READY_QUEUE_SIZE = 3;
+	private PriorityQueue<Process> readyQueue;
 	
 	/**
 	 * Default Constructor

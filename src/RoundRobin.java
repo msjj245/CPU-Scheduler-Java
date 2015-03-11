@@ -1,7 +1,7 @@
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Iterator;
-import java.util.PriorityQueue;
+import java.util.LinkedList;
+import java.util.Queue;
 
 
 public class RoundRobin extends Scheduler {
@@ -9,6 +9,7 @@ public class RoundRobin extends Scheduler {
 	private final int READY_QUEUE_SIZE = 3;
 	private int timeQuantum;
 	private boolean contextSwitch;
+	private Queue<Process> readyQueue;
 	
 	/*
 	 * Custom Constructor
@@ -17,6 +18,9 @@ public class RoundRobin extends Scheduler {
 		
 		super(processList);
 		
+		/*
+		 * Make sure the user input a correct time quantum.
+		 */
 		if (timeQuantum > 0) {
 			
 			this.timeQuantum = timeQuantum;
@@ -30,7 +34,7 @@ public class RoundRobin extends Scheduler {
 		/*
 		 * Assigns the readyQueue an order comparator for the ID (FIFO)
 		 */
-		readyQueue = new PriorityQueue<Process>(orderComparator);
+		readyQueue = new LinkedList<Process>();
 		
 		loadProcesses(processList);
 		
@@ -47,9 +51,9 @@ public class RoundRobin extends Scheduler {
 	private void run() {
 		
 		/*
-		 * While there is still something to run from the readyQueue.
+		 * While there is still something to run from the readyQueue or already in the CPU.
 		 */
-		while (readyQueue.iterator().hasNext()) {
+		while (readyQueue.iterator().hasNext() || !CPU.isEmpty()) {
 			
 			/*
 			 * Set up the CPU with the first process to get the ball rolling..
@@ -59,27 +63,29 @@ public class RoundRobin extends Scheduler {
 				CPU.add(readyQueue.remove());
 			}
 			
+			printState();
 			while (!contextSwitch) {
 				
 				Process cpuProcess = null;
 				int cpuBurst = 0;
 				int timeQuantumCounter = timeQuantum; 
 				
-				if ( !CPU.isEmpty() ) {
-					
-					cpuProcess = CPU.remove();
-					cpuBurst = cpuProcess.getNextCpuBurst();		
-				}
-				else if (CPU.isEmpty() && readyQueue.iterator().hasNext()) {
-					
-					cpuProcess = readyQueue.remove();
-					cpuBurst = cpuProcess.getNextCpuBurst();
-				}
-				
 				/*
 				 * Let the time quantum guide the clock ticks
 				 */
 				while (timeQuantumCounter > 0) {
+					
+					if ( !CPU.isEmpty() ) {
+						
+						cpuProcess = CPU.remove();
+						cpuBurst = cpuProcess.getNextCpuBurst();		
+					}
+					else if (cpuProcess == null) {
+						/*
+						 * No more processes, end.
+						 */
+						break;
+					}
 					
 					theClock.tick();
 					timeQuantumCounter--;
@@ -95,14 +101,75 @@ public class RoundRobin extends Scheduler {
 						}
 					}
 					// ELSE omitted intentionally
+					
+					if ( cpuBurst > 0 && timeQuantumCounter == 0 ) {
+						
+						cpuProcess.returnCpuBurst(cpuBurst);
+						readyQueue.add(cpuProcess);
+					}
+					else if (cpuBurst == 0 && timeQuantumCounter > 0) {
+						
+						if (cpuProcess.getCpuBurstIndex() > 0) {
+							
+							Disk.add(cpuProcess);
+							break;
+						}
+						else {
+							
+							cpuProcess = null;
+							break;
+						}
+					}
+					else if (cpuBurst == 0 && timeQuantumCounter == 0) {
+						
+						if (cpuProcess.getCpuBurstIndex() > 0) {
+							
+							Disk.add(cpuProcess);
+						}
+						else {
+							
+							cpuProcess = null;
+							break;
+						}
+					}
 				}
 				// END while timeQuantumCounter
 				
 				contextSwitch = true;
 			}
 			// END while contextSwitch false
+			
+			
+			/*
+			 * Refill the readyQueue from the ioWaitQueue first, or else from the jobQueue.
+			 */
+			while (ioWaitQueue.iterator().hasNext() && (readyQueue.size() < READY_QUEUE_SIZE)) {
+				
+				readyQueue.add(ioWaitQueue.remove());
+				contextSwitch = false;
+			}
+			
+			if (!jobQueue.isEmpty() && (readyQueue.size() < READY_QUEUE_SIZE)) {
+				
+				readyQueue.add(jobQueue.remove());
+				contextSwitch = false;
+			}
+			// ELSE omitted intentionally
+			
+			if ( CPU.isEmpty() && !readyQueue.isEmpty() ) {
+				
+				CPU.add(readyQueue.remove());
+				contextSwitch = false;
+			}
+			// ELSE omitted intentionally
+			
 		}
 		// END while CPU not empty
+		
+		/*
+		 * Print the final empty state.
+		 */
+		printState();
 		
 	} // END run().
 
@@ -120,13 +187,13 @@ public class RoundRobin extends Scheduler {
 	/**
 	 * Assigns a comparator for the FIFO of a Process in the readyQueue
 	 */
-    public static Comparator<Process> orderComparator = new Comparator<Process>(){
+    /*public static Comparator<Process> orderComparator = new Comparator<Process>(){
          
         @Override
         public int compare(Process p1, Process p2) {
             return (int) (p1.getId() - p2.getId());
         }
-    };
+    };*/
 
 	@Override
 	public void loadProcesses(ArrayList<Process> processList) {

@@ -1,14 +1,12 @@
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.PriorityQueue;
 import java.util.Queue;
 
 
 public abstract class Scheduler {
 	
 	protected Clock theClock;
-	protected PriorityQueue<Process> readyQueue;
 	protected Queue<Process> ioWaitQueue;
 	protected LinkedList<Process> jobQueue;
 	protected LimitedQueue<Process> CPU;

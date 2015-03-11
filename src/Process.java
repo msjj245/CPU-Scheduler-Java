@@ -27,7 +27,6 @@ public class Process {
 		this.cpuBurstList = cpuBurst;
 		this.ioBurstList = ioBurst;
 		
-		
 	} // End default constructor
 	
 	/*
@@ -57,6 +56,10 @@ public class Process {
 	public void returnIoBurst(int burst) {
 		
 		ioBurstList.add(0, burst);
+	}
+	public void returnCpuBurst(int burst) {
+		
+		cpuBurstList.add(0, burst);
 	}
 	public Iterator<Integer> getCpuIterator() {
 		return cpuBurstList.iterator();

@@ -53,7 +53,7 @@ public class Client {
 					processList = parseInputFile("jobs-testdata2.txt");
 					
 					System.out.print("Enter time quantum length:");
-					timeQuantum = 2; // input.nextInt();
+					timeQuantum = 5; // input.nextInt();
 					
 					System.out.println("\n-->\nUsing RoundRobin Scheduling with a time quantum of " + timeQuantum + "\n");
 					scheduler = new RoundRobin(processList, timeQuantum);
