@@ -11,7 +11,7 @@ public abstract class Scheduler {
 	protected LinkedList<Process> jobQueue;
 	protected LimitedQueue<Process> CPU;
 	protected Disk Disk;
-	// protected PrintStream out;
+	protected boolean contextSwitch;
 	
 	/**
 	 * Default Constructor 
@@ -24,27 +24,14 @@ public abstract class Scheduler {
 		CPU = new LimitedQueue<Process>(1);
 		Disk = new Disk();
 		
-		theClock = Clock.getInstance();
-		
-		/*DateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy-HH:mm:ss");
-		Date date = new Date();
-		
-		try {
-			
-			out = new PrintStream(new FileOutputStream("sjf-output-" + dateFormat.format(date)));
-		} 
-		catch (FileNotFoundException e) {
-			
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}*/
+		contextSwitch = false;
 		
 	} // End Default Constructor
 	
 	/**
-	 * Begin scheduling algorithm
+	 * Run the scheduler
 	 */
-	public abstract void contextSwitch();
+	public abstract void run();
 	
 	/**
 	 * Loads all processes into the job queue,

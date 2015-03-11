@@ -48,14 +48,14 @@ public class Client {
 					
 					int timeQuantum = 0;
 					System.out.print("Enter a filename of jobs data: ");
-					// dataFile = input.nextLine();
+					dataFile = input.nextLine();
 					
 					processList = parseInputFile("jobs-testdata2.txt");
 					
 					System.out.print("Enter time quantum length:");
-					timeQuantum = 5; // input.nextInt();
+					timeQuantum = input.nextInt();
 					
-					System.out.println("\n-->\nUsing RoundRobin Scheduling with a time quantum of " + timeQuantum + "\n");
+					System.out.println("\n-->\nUsing RR Scheduling with a time quantum of " + timeQuantum + "\n");
 					scheduler = new RoundRobin(processList, timeQuantum);
 					
 					break;
@@ -64,7 +64,7 @@ public class Client {
 					
 					System.out.println("\n-->\nUsing SJF Scheduling\n\n");
 					System.out.print("Enter filename of jobs data: ");
-					dataFile = input.nextLine();
+					dataFile = "reverse-testdata.txt";
 					
 					processList = parseInputFile(dataFile);
 					scheduler = new SJF(processList);

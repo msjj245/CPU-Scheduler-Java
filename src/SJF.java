@@ -5,7 +5,6 @@ import java.util.PriorityQueue;
 
 public class SJF extends Scheduler {
 	
-	private Clock theClock;
 	private final int READY_QUEUE_SIZE = 3;
 	private PriorityQueue<Process> readyQueue;
 	
@@ -27,7 +26,7 @@ public class SJF extends Scheduler {
 		System.out.println("\nTimer is 0-based\n");
 		System.out.println("/////////////////////////////////");
 		
-		contextSwitch();
+		run();
 	}
 	
 	/**
@@ -63,7 +62,104 @@ public class SJF extends Scheduler {
         
     }; // End jobTimeComparator().
 
-	@Override
+    /**
+	 * Run the Scheduler.
+	 */
+	public void run() {
+		
+		/*
+		 * While there is still something to run from the readyQueue or already in the CPU.
+		 */
+		while (readyQueue.iterator().hasNext() || !CPU.isEmpty()) {
+			
+			/*
+			 * Set up the CPU with the first process to get the ball rolling..
+			 */
+			if (CPU.isEmpty()) {
+				
+				CPU.add(readyQueue.remove());
+			}
+			
+			printState();
+			while (!contextSwitch) {
+				
+				Process cpuProcess = null;
+				int cpuBurst = 0;
+				
+				if ( !CPU.isEmpty() ) {
+					
+					cpuProcess = CPU.remove();
+					cpuBurst = cpuProcess.getNextCpuBurst();		
+				}
+				
+				/*
+				 * Let the cpuBurst guide the clock ticks
+				 */
+				while (cpuBurst > 0) {
+					
+					theClock.tick();
+					cpuBurst--;
+					
+					if (!Disk.isEmpty()) {
+						
+						Disk.decrement();
+						
+						while (Disk.isCompleted()) {
+							
+							ioWaitQueue.add(Disk.remove());
+						}
+					}
+					// ELSE omitted intentionally
+				}
+				// End WHILE
+				
+				if (cpuProcess.getCpuBurstIndex() == 0) {
+					
+					cpuProcess = null;
+				}
+				else {
+					
+					Disk.add(cpuProcess);
+				}
+				
+				contextSwitch = true;
+			}
+			// End WHILE
+			
+			
+			/*
+			 * Refill the readyQueue from the ioWaitQueue first, or else from the jobQueue.
+			 */
+			while (ioWaitQueue.iterator().hasNext() && (readyQueue.size() < READY_QUEUE_SIZE)) {
+				
+				readyQueue.add(ioWaitQueue.remove());
+			}
+			
+			if (!jobQueue.isEmpty() && (readyQueue.size() < READY_QUEUE_SIZE)) {
+				
+				readyQueue.add(jobQueue.remove());
+			}
+			// ELSE omitted intentionally
+			
+			if ( CPU.isEmpty() && !readyQueue.isEmpty() ) {
+				
+				CPU.add(readyQueue.remove());
+				contextSwitch = false;
+			}
+			// ELSE omitted intentionally
+			
+		}
+		// END while CPU not empty
+		
+		/*
+		 * Print the final empty state.
+		 */
+		printState();
+		
+	} // End run().
+
+    
+    
 	/**
 	 * Begin SJF Algorithm
 	 */
@@ -180,62 +276,4 @@ public class SJF extends Scheduler {
 		
 	} // End printState().
 	
-	/**
-	 * Run the processes in the CPU and Disk.
-	 */
-	private void run() {
-		
-		if ( !CPU.isEmpty() ) {
-			
-			Process cpuProcess = CPU.remove();
-			int cpuBurst = cpuProcess.getNextCpuBurst();	
-			
-			/*
-			 * Let the CPU burst guide the clock ticks
-			 */
-			while (cpuBurst > 0) {
-				
-				theClock.tick();
-				cpuBurst--;
-				
-				if (!Disk.isEmpty()) {
-					
-					Disk.decrement();
-					
-					while (Disk.isCompleted()) {
-						
-						ioWaitQueue.add(Disk.remove());
-					}
-				}
-				// ELSE omitted intentionally
-			}
-			// END while
-			
-			/*
-			 * No more CPU bursts to run, delete/remove the process as finished.
-			 */
-			if (cpuProcess.getCpuBurstIndex() == 0) {
-				
-				cpuProcess = null;
-			}
-			else {
-				
-				Disk.add(cpuProcess);
-			}
-		
-		}
-		else if (CPU.isEmpty() && !Disk.isEmpty() ) {
-			
-			theClock.tick();
-			Disk.decrement();
-			
-			while(Disk.isCompleted()) {
-				
-				ioWaitQueue.add(Disk.remove());
-			}
-		}
-		// ELSE omitted intentionally
-		
-	} // End run().
-
 } // End SJF Class

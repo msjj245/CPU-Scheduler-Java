@@ -48,7 +48,7 @@ public class RoundRobin extends Scheduler {
 	/**
 	 * Run the Scheduler
 	 */
-	private void run() {
+	public void run() {
 		
 		/*
 		 * While there is still something to run from the readyQueue or already in the CPU.
@@ -184,17 +184,6 @@ public class RoundRobin extends Scheduler {
 		System.out.printf("\t%-15s %4s\n", "IOWait Queue:", getIoWaitQueueContents());	
 	}
 	
-	/**
-	 * Assigns a comparator for the FIFO of a Process in the readyQueue
-	 */
-    /*public static Comparator<Process> orderComparator = new Comparator<Process>(){
-         
-        @Override
-        public int compare(Process p1, Process p2) {
-            return (int) (p1.getId() - p2.getId());
-        }
-    };*/
-
 	@Override
 	public void loadProcesses(ArrayList<Process> processList) {
 		
@@ -233,11 +222,5 @@ public class RoundRobin extends Scheduler {
 		return ret;
 		
 	} // END getReadyQueueContents().
-
-	@Override
-	public void contextSwitch() {
-		// TODO Auto-generated method stub
-		
-	}
 
 } // END RoundRobin Scheduler Class
