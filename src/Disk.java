@@ -24,9 +24,7 @@ public class Disk extends PriorityQueue<Process>{
 		while (iterator.hasNext()) {
 			
 			Process thisProcess = iterator.next();
-			int oldBurst = thisProcess.peekNextIoBurst();
-			int newBurst = oldBurst - 1;
-			thisProcess.setNextIoBurst(newBurst);
+			thisProcess.setNextIoBurst(thisProcess.peekNextIoBurst() - 1);
 		}
 	}
 	

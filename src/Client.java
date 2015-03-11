@@ -9,7 +9,6 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -47,15 +46,16 @@ public class Client {
 				case 1:
 					
 					int timeQuantum = 0;
+					System.out.print("Enter time quantum length:");
+					timeQuantum = input.nextInt();
+					input.nextLine();
+					
+					System.out.println("\nUsing RR Scheduling with a time quantum of " + timeQuantum + "\n");
+					
 					System.out.print("Enter a filename of jobs data: ");
 					dataFile = input.nextLine();
 					
-					processList = parseInputFile("jobs-testdata2.txt");
-					
-					System.out.print("Enter time quantum length:");
-					timeQuantum = input.nextInt();
-					
-					System.out.println("\n-->\nUsing RR Scheduling with a time quantum of " + timeQuantum + "\n");
+					processList = parseInputFile(dataFile);
 					scheduler = new RoundRobin(processList, timeQuantum);
 					
 					break;
@@ -64,7 +64,7 @@ public class Client {
 					
 					System.out.println("\n-->\nUsing SJF Scheduling\n\n");
 					System.out.print("Enter filename of jobs data: ");
-					dataFile = "reverse-testdata.txt";
+					dataFile = input.nextLine();
 					
 					processList = parseInputFile(dataFile);
 					scheduler = new SJF(processList);
@@ -80,9 +80,19 @@ public class Client {
 			} // End switch
 					
 		} // End else command
+		
+		
 
 	} // End main
 	
+	/**
+	 * parseInputFile
+	 * 
+	 * used to process the input file of batch processes to load into the scheduler
+	 * 
+	 * @param filePath
+	 * @return
+	 */
 	public static ArrayList<Process> parseInputFile(String filePath) {
 		
 		BufferedReader br = null;

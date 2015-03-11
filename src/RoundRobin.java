@@ -11,8 +11,11 @@ public class RoundRobin extends Scheduler {
 	private boolean contextSwitch;
 	private Queue<Process> readyQueue;
 	
-	/*
-	 * Custom Constructor
+	/**
+	 * Default Constructor
+	 * 
+	 * @param processList
+	 * @param timeQuantum
 	 */
 	public RoundRobin(ArrayList<Process> processList, int timeQuantum) {
 		
@@ -46,7 +49,7 @@ public class RoundRobin extends Scheduler {
 	}
 	
 	/**
-	 * Run the Scheduler
+	 * Run the RR Scheduler
 	 */
 	public void run() {
 		
@@ -141,18 +144,17 @@ public class RoundRobin extends Scheduler {
 			
 			
 			/*
-			 * Refill the readyQueue from the ioWaitQueue first, or else from the jobQueue.
+			 * Refill the readyQueue from the ioWaitQueue first, next from the jobQueue.
 			 */
 			while (ioWaitQueue.iterator().hasNext() && (readyQueue.size() < READY_QUEUE_SIZE)) {
 				
 				readyQueue.add(ioWaitQueue.remove());
-				contextSwitch = false;
 			}
+			// End WHILE
 			
 			if (!jobQueue.isEmpty() && (readyQueue.size() < READY_QUEUE_SIZE)) {
 				
 				readyQueue.add(jobQueue.remove());
-				contextSwitch = false;
 			}
 			// ELSE omitted intentionally
 			

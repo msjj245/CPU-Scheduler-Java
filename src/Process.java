@@ -103,10 +103,8 @@ public class Process {
 	@Override
 	public String toString() {
 		
-		String text = String.format("\n   PCB %d\n\n\tCPU Bursts: %s\n\tIO Bursts: %s\n\tcpuBurstIndex: %d" +
-				"\n\tioBurstIndex: %d\n\tremainingCPUBurstTime: %d\n\tremainingIOBurstTime: %d" +
-				"\n\tremainingTicksInTimeslice: %d",
-				this.getId(), cpuBurstList.toString(), ioBurstList.toString(), -1, -1, 0, 0, 0);
+		String text = String.format("\n   PCB %d\n\n\tCPU Bursts: %s\n\tIO Bursts: %s",
+				this.getId(), cpuBurstList.toString(), ioBurstList.toString());
 		
 		return text;
 		

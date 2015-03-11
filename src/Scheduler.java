@@ -14,7 +14,7 @@ public abstract class Scheduler {
 	protected boolean contextSwitch;
 	
 	/**
-	 * Default Constructor 
+	 * Default Constructor  
 	 */
 	public Scheduler(ArrayList<Process> processList) {
 		

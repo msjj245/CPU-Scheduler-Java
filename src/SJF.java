@@ -32,7 +32,7 @@ public class SJF extends Scheduler {
 	/**
 	 * Assigns a comparator for the next CPU burst of a Process.
 	 * If the burst time is the same, compare the id for order.
-	 * Smaller id is a greater priority.
+	 * ---Smaller id is a greater priority.
 	 */
     public static Comparator<Process> burstTimeComparator = new Comparator<Process>(){
          
@@ -91,6 +91,7 @@ public class SJF extends Scheduler {
 					cpuProcess = CPU.remove();
 					cpuBurst = cpuProcess.getNextCpuBurst();		
 				}
+				// ELSE omitted intentionally
 				
 				/*
 				 * Let the cpuBurst guide the clock ticks
@@ -128,7 +129,7 @@ public class SJF extends Scheduler {
 			
 			
 			/*
-			 * Refill the readyQueue from the ioWaitQueue first, or else from the jobQueue.
+			 * Refill the readyQueue from the ioWaitQueue first, then from the jobQueue.
 			 */
 			while (ioWaitQueue.iterator().hasNext() && (readyQueue.size() < READY_QUEUE_SIZE)) {
 				
@@ -157,62 +158,6 @@ public class SJF extends Scheduler {
 		printState();
 		
 	} // End run().
-
-    
-    
-	/**
-	 * Begin SJF Algorithm
-	 */
-	public void contextSwitch() {
-		
-		/*
-		 * While there are still processes to run..
-		 */
-		while(readyQueue.iterator().hasNext()) {
-			
-			/*
-			 * Fill the CPU from the readyQueue
-			 */
-			if (CPU.isEmpty()) {
-				
-				CPU.add(readyQueue.remove());
-			}
-			// ELSE omitted intentionally
-			
-			printState();
-			run();
-			
-			/*
-			 * Refill the readyQueue if there is room
-			 * 
-			 * If the IoWaitQueue has something grab it from there first
-			 * Else grab from the jobQueue
-			 */
-			if (!ioWaitQueue.isEmpty() && (readyQueue.size() < READY_QUEUE_SIZE)) {
-				
-				readyQueue.add(ioWaitQueue.remove());
-			}
-			else if (!jobQueue.isEmpty() && (readyQueue.size() < READY_QUEUE_SIZE)) {
-				
-				readyQueue.add(jobQueue.remove());
-			}
-			// ELSE omitted intentionally
-		}
-		// END while
-		
-		/*
-		 * All the processes are finished
-		 */
-		if ( readyQueue.isEmpty() && CPU.isEmpty() ) {
-			
-			/*
-			 * Print the end state
-			 */
-			printState();
-		}
-		// ELSE omitted intentionally
-
-	} // End contextSwitch().
 	
 	/**
 	 * Uses Iterator to traverse through the readyQueue.
